@@ -31,11 +31,11 @@ final class MainViewModel: IMainViewModel {
     }
 
     func getWeather(name: String?, completion: @escaping (CLError?) -> Void) {
-        locationManager.getLocation(name: name) { [weak self] location, error in
+        locationManager.getLocation(name: name) { [weak self] location, clError in
             guard let self = self else { return }
 
-            if let error {
-                completion(error)
+            if let clError {
+                completion(clError)
                 return
             }
 

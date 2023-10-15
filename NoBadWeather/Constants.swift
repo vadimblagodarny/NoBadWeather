@@ -25,6 +25,9 @@ enum Constants {
         static let locationSearchNext = "Далее"
         static let locationSearchCancel = "Отмена"
         static let customCellDateFormat = "EEEE\ndd MMM, HH:mm"
+        static let defaultLocation = "Местоположение не определено"
+        static let defaultConditions = "Нет данных"
+        static let defaultTempRange = "Пожалуйста, выполни запрос"
     }
     
     enum Images {

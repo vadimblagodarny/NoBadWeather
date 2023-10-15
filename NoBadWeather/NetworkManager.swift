@@ -31,7 +31,7 @@ final class NetworkManager: INetworkManager {
         request.httpMethod = requestType.rawValue
 
         let task = URLSession.shared.dataTask(with: request) { data, _, error in
-            if let error { print(error) }
+            if let error { parser(Data(), api) }
             if let data {
                 parser(data, api)
             }

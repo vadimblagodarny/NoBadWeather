@@ -42,6 +42,7 @@ final class MainView: UIViewController {
         let lbl = UILabel()
         lbl.textAlignment = .center
         lbl.font = UIFont.boldSystemFont(ofSize: UIFont.systemFontSize)
+        lbl.text = Constants.Strings.defaultLocation
         return lbl
     }()
 
@@ -52,6 +53,7 @@ final class MainView: UIViewController {
         lbl.backgroundColor = Constants.Colors.temperatureLabelBGColor
         lbl.layer.masksToBounds = true
         lbl.layer.cornerRadius = Constants.UISize.globalCornerRadius
+        lbl.text = "-" + Constants.Strings.tempSuffix
         return lbl
     }()
 
@@ -59,6 +61,7 @@ final class MainView: UIViewController {
         let lbl = UILabel()
         lbl.textAlignment = .center
         lbl.font = UIFont.boldSystemFont(ofSize: UIFont.labelFontSize)
+        lbl.text = Constants.Strings.defaultConditions
         return lbl
     }()
 
@@ -66,6 +69,7 @@ final class MainView: UIViewController {
         let lbl = UILabel()
         lbl.textAlignment = .center
         lbl.font = UIFont.boldSystemFont(ofSize: UIFont.labelFontSize)
+        lbl.text = Constants.Strings.defaultTempRange
         return lbl
     }()
     
@@ -74,7 +78,6 @@ final class MainView: UIViewController {
         button.setImage(Constants.Images.locationCurrentButtonImage, for: .normal)
         button.tintColor = .blue
         button.addTarget(self, action: #selector(locationCurrentTap), for: .touchUpInside)
-        button.isHidden = true
         return button
     }()
 
@@ -83,7 +86,6 @@ final class MainView: UIViewController {
         button.setImage(Constants.Images.locationSearchButtonImage, for: .normal)
         button.tintColor = .blue
         button.addTarget(self, action: #selector(locationSearchTap), for: .touchUpInside)
-        button.isHidden = true
         return button
     }()
 
@@ -101,16 +103,12 @@ final class MainView: UIViewController {
         setupViews()
         setupConstraints()
         bind()
-        weatherRequest(name: locationName)
     }
     
     private func bind() {
         viewModel.weatherCurrentSignal.bind { [weak self] value in
             DispatchQueue.main.async {
                 guard let self else { return }
-                
-                self.locationSearchButton.isHidden = false
-                self.locationCurrentButton.isHidden = false
                 
                 if let name = value?.name,
                    let temp = value?.main?.temp,
@@ -122,16 +120,17 @@ final class MainView: UIViewController {
                     self.temperatureLabel.text = Int(temp).description + Constants.Strings.tempSuffix
                     self.conditionsLabel.text = conditions
                     self.tempRangeLabel.text = Constants.Strings.tempPrefix + Int(tempMin).description + Constants.Strings.tempMiddle + Int(tempMax).description + Constants.Strings.tempSuffix
-                    self.spinnerCurrent.stopAnimating()
                 }
+                
+                self.spinnerCurrent.stopAnimating()
             }
         }
 
         viewModel.weatherForecastSignal.bind { [weak self] value in
             DispatchQueue.main.async {
+                self?.spinnerForecast.stopAnimating()
                 self?.weatherForecast = value
                 self?.tableView.reloadData()
-                self?.spinnerForecast.stopAnimating()
             }
         }
     }
@@ -202,9 +201,9 @@ final class MainView: UIViewController {
     private func weatherRequest(name: String?) {
         spinnerCurrent.startAnimating()
         spinnerForecast.startAnimating()
-        viewModel.getWeather(name: name) { [weak self] error in
-            if let error {
-                self?.showErrorAlert(error)
+        viewModel.getWeather(name: name) { [weak self] clError in
+            if let clError {
+                self?.showErrorAlert(clError)
                 self?.locationName = nil
                 self?.spinnerCurrent.stopAnimating()
                 self?.spinnerForecast.stopAnimating()
@@ -212,10 +211,10 @@ final class MainView: UIViewController {
         }
     }
     
-    private func showErrorAlert(_ error: CLError) {
+    private func showErrorAlert(_ clError: CLError) {
         var message = String()
         
-        switch error.errorCode {
+        switch clError.errorCode {
         case 2:
             message = Constants.Other.errorCLnetwork
         case 8:
