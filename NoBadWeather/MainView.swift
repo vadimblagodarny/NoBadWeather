@@ -103,6 +103,7 @@ final class MainView: UIViewController {
         setupViews()
         setupConstraints()
         bind()
+        weatherRequest(name: nil)
     }
     
     private func bind() {
